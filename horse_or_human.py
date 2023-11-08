@@ -22,7 +22,9 @@ validation_dir = 'horse-or-human/validation/'
 # zip_ref.extractall(training_dir)
 # zip_ref.close()
 
-train_datagen = ImageDataGenerator(rescale=1/255)
+train_datagen = ImageDataGenerator(rescale=1/255, rotation_range=40, width_shift_range=0.2,
+                                   height_shift_range=0.2, shear_range=0.2, zoom_range=0.2,
+                                   horizontal_flip=True, fill_mode='nearest')
 train_generator = train_datagen.flow_from_directory(training_dir, batch_size=128, target_size=(300,300), class_mode = 'binary')
 
 validation_datagen = ImageDataGenerator(rescale=1/255)
@@ -58,17 +60,24 @@ model.compile(loss='binary_crossentropy', optimizer=tf.keras.optimizers.RMSprop(
 model.summary()
 model.fit(train_generator, epochs=15, validation_data = validation_generator)
 
-img = image.load_img('test1.jpg', target_size=(300,300))
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
+def predit_image(image_path):
+    print('About to predict {}'.format(image_path))
+    img = image.load_img('test1.jpg', target_size=(300,300))
+    x = image.img_to_array(img)
+    x = np.expand_dims(x, axis=0)
 
-image_tensor = np.vstack([x])
-clases = model.predict(image_tensor)
+    image_tensor = np.vstack([x])
+    clases = model.predict(image_tensor)
 
-print(clases)
-print(clases[0])
+    print(clases)
+    print(clases[0])
 
-if (clases[0] > 0.5):
-    print('test image is a human')
-else:
-    print("test image is a horse")
+    if (clases[0] > 0.5):
+        print('{} image is a human'.format(image_path))
+    else:
+        print('{} image is a horse'.format(image_path))
+    
+images = ['test1.jpg', 'test2.jpg', 'test3.jpg']
+for image_path in images:
+    predit_image(image_path)
+
